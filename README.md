@@ -1,57 +1,40 @@
-OctoPrint Plugin Skeleton
-=========================
+OctoGlow Plugin
+===============
 
-This is a basic plugin skeleton that you can use as a basis for your own OctoPrint plugin.
+This is a plugin for displaying [OctoPrint](http://octoprint.org/) status on a [Pimoroni PiGlow](http://shop.pimoroni.com/products/piglow).
 
-You can copy the files to a folder of your choice, or just clone this repository, renaming it in the process, and check
-it out. Then modify ``setup.py`` to fit your plugin, rename ``octoprint_skeleton`` accordingly and finally implement
-your plugin under ``octoprint_<plugin identifier>``.
+In addition to installing the plugin, you will need to enable i2c on your Raspberry Pi.
 
-Example Usage
--------------
+Requirements
+------------
+* Raspberry Pi
+* Pimoroni PiGlow
+* OctoPi 1.2.0+
 
-Clone your repository into a new development directory and rename ``octoprint_skeleton``:
+Acknowledgements
+----------------
+OctoGlow uses Jason Barnett's [PiGlow Python module](https://github.com/Boeeerb/PiGlow)
 
-    git clone https://github.com/OctoPrint/OctoPrint-PluginSkeleton OctoPrint-MyNewPlugin
-    cd OctoPrint-MyNewPlugin
-    mv octoprint_skeleton octoprint_mynewplugin
+Enabling i2c
+------------
+The PiGlow board requires i2c to be enabled on the Raspberry Pi.  Please follow the [Pimoroni guide on enabling i2c](https://github.com/pimoroni/piglow) on the Raspberry Pi.
 
-Modify `setup.py`'s `plugin_<xyz>` settings so that they match your plugin, e.g.:
-
-``` python
-plugin_identifier = "mynewplugin"
-plugin_name = "OctoPrint-MyNewPlugin"
-plugin_version = "1.0"
-plugin_description = "Awesome plugin that does something"
-plugin_author = "You"
-plugin_author_email = "you@somewhere.net"
-plugin_url = "https://github.com/you/OctoPrint-MyNewPlugin"
+Additionally, the pi user must be added to the i2c group in order to allow OctoPrint to send commands to the PiGlow without needing root privileges:
+``` bash
+sudo adduser pi i2c
 ```
 
-Then implement your plugin under ``octoprint_mynewplugin`` (don't forget to adjust ``__init__.py``!), e.g.:
+Moving to OctoPrint 1.2.0
+-------------------------
+Follow the process in [the OctoPrint FAQ](https://github.com/foosel/OctoPrint/wiki/FAQ#how-can-i-switch-the-branch-of-the-octoprint-installation-on-my-octopi-image) to move to the development branch
 
-``` python
-# coding=utf-8
-from __future__ import absolute_import
+Installing the Plugin
+---------------------
+Install the plugin like you would install any regular Python package from source:
 
-import octoprint.plugin
-
-class HelloWorldPlugin(octoprint.plugin.StartupPlugin):
-    def on_after_startup(self):
-        self._logger.info("Hello World!")
-        
-__plugin_name__ = "Hello World"
-__plugin_implementations__ = [HelloWorldPlugin()]
+``` bash
+pip install https://github.com/dmalec/OctoPrint-OctoGlow/archive/master.zip
 ```
 
-Test it (e.g. via ``python setup.py develop``). If everything works, write a nice ``README.md``, replacing the existing one.
-Commit your code, then push it to your plugin's repository (this assumes you already created it on Github as
-``you/OctoPrint-MyNewPlugin``), e.g.:
+Make sure you use the same Python environment that you installed OctoPrint under, otherwise the plugin won't be able to satisfy its dependencies.
 
-    git commit -a -m "Initial commit of MyNewPlugin"
-    git remote set-url origin git@github.com:you/OctoPrint-MyNewPlugin.git
-    git push -u origin master
-
-Congratulations, you are now the proud maintainer of a new OctoPrint plugin! :) Don't forget to add an entry to the
-[wiki](https://github.com/foosel/OctoPrint/wiki#plugins) once it's suitable for general consumption, so that other's
-may find it!
