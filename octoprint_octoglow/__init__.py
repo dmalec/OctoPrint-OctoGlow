@@ -9,7 +9,6 @@ from .piglow import PiGlow
 
 class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
                      octoprint.plugin.ProgressPlugin,
-                     octoprint.plugin.ShutdownPlugin,
                      octoprint.plugin.StartupPlugin):
     """
     Plugin for animating the LEDs on a PiGlow board based on OctoPrint events.
@@ -24,18 +23,10 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
         """
         Callback for just after launch of OctoPrint.
         """
-        self._logger.info("OctoGlow startup started")
         self._piglow = PiGlow()
         self._animator = threading.Thread(target=self._animate)
         self._animator.daemon = True
         self._animator.start()
-        self._logger.info("OctoGlow startup finished")
-
-    def on_shutdown(self):
-        """
-        Callback for imminent shutdown of OctoPrint.
-        """
-        self._logger.info("OctoGlow shutdown")
 
     def on_event(self, event, payload):
         """
@@ -43,26 +34,20 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
         """
         with self._lock:
             if event == octoprint.events.Events.CONNECTED:
-                self._logger.info("Received Event: CONNECTED")
                 self._currentAnimation = self._animatePrinterConnected
             elif event == octoprint.events.Events.PRINT_STARTED:
-                self._logger.info("Received Event: PRINT_STARTED")
                 self._currentAnimation = self._animatePrintStarted
             elif event == octoprint.events.Events.PRINT_DONE:
-                self._logger.info("Received Event: PRINT_DONE")
                 self._currentAnimation = self._animatePrintDone
             elif event == octoprint.events.Events.PRINT_FAILED or event == octoprint.events.Events.PRINT_CANCELLED:
-                self._logger.info("Received Event: PRINT_FAILED")
                 self._currentAnimation = self._animatePrintFailed
             elif event == octoprint.events.Events.DISCONNECTED:
-                self._logger.info("Received Event: DISCONNECTED")
                 self._currentAnimation = None
 
     def on_print_progress(self, storage, path, progress):
         """
         Callback for progress during a running print job.
         """
-        self._logger.info("Received Print Progress: {0}".format(progress))
         with self._lock:
             self._printProgress = progress
             self._currentAnimation = self._animatePrintProgress
@@ -71,7 +56,7 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
         """
         Handle a frame of animation.
         """
-        self._logger.info("Animation thread started")
+        self._logger.debug("OctoGlow animation thread started")
         
         currentAnimation = None
         frame = 0
@@ -81,10 +66,9 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
             if frame == 0:
                 with self._lock:
                     if currentAnimation != self._currentAnimation:
-                        self._logger.info("Changing animation from {0} to {1}".format(currentAnimation, self._currentAnimation))
+                        self._logger.debug("Changing animation from {0} to {1}".format(currentAnimation, self._currentAnimation))
                         currentAnimation = self._currentAnimation
                     if printProgress != self._printProgress:
-                        self._logger.info("Changing progress from {0} to {1}".format(printProgress, self._printProgress))
                         printProgress = self._printProgress
             
             if currentAnimation is not None:
@@ -101,6 +85,7 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
     def _animatePrintStarted(self, frame, printProgress):
         """
         Handle a frame of the print started animation.
+        Light the arms up in sequence.
         """
         next_frame = frame + 1;
         
@@ -121,6 +106,7 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
     def _animatePrintProgress(self, frame, printProgress):
         """
         Handle a frame of the print progress animation.
+        Pulse the leds with larger progress values lighting up more leds.
         """
         next_frame = frame + 1;
         level = 0;
@@ -155,6 +141,7 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
     def _animatePrintFailed(self, frame, printProgress):
         """
         Handle a frame of the print failed animation.
+        Blink the red leds twice, then pause.
         """
         next_frame = frame + 1;
         
@@ -174,14 +161,13 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
     def _pulse(self, colour, frame, printProgress):
         """
         Handle a frame of the pulse animation.
+        Fade up for 64 frames, then fade down for 64 frames.
         """
         next_frame = frame + 1;
         
         if frame < 64:
-            # Fade up for the first 64 frames.
             self._piglow.colour(colour, frame)
         elif frame < 128:
-            # Fade down for the second 64 frames.
             self._piglow.colour(colour, 64 - (frame - 64))
         else:
             next_frame = 0
