@@ -32,7 +32,7 @@ plugin_author_email = "dan.malec@gmail.com"
 plugin_url = "https://github.com/dmalec/OctoPrint-OctoGlow"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
-plugin_license = "AGPLv3"
+plugin_license = "CC BY-NC-SA 4.0"
 
 # Additional package data to install for this plugin. The subfolders "templates", "static" and "translations" will
 # already be installed automatically if they exist.
