@@ -24,6 +24,7 @@ class OctoGlowPlugin(octoprint.plugin.EventHandlerPlugin,
         Callback for just after launch of OctoPrint.
         """
         self._piglow = PiGlow()
+        self._piglow.all(0)
         self._animator = threading.Thread(target=self._animate)
         self._animator.daemon = True
         self._animator.start()
