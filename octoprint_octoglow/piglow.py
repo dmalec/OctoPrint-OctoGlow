@@ -20,11 +20,20 @@ bus = 0
 class PiGlow:
 
     def __init__(self):
-        if rpi.RPI_REVISION == 1:
+        if hasattr(rpi, "RPI_INFO") and "P1_REVISION" in rpi.RPI_INFO:
+            # RPi.GPIO >= 0.5.10
+            revision = rpi.RPI_INFO["P1_REVISION"]
+        elif hasattr(rpi, "RPI_REVISION"):
+            # RPi.GPIO < 0.5.10
+            revision = rpi.RPI_REVISION
+        else:
+            print "Unable to determine Raspberry Pi revision."
+
+        if revision == 1:
             i2c_bus = 0
-        elif rpi.RPI_REVISION == 2:
+        elif revision == 2:
             i2c_bus = 1
-        elif rpi.RPI_REVISION == 3:
+        elif revision == 3:
             i2c_bus = 1
         else:
             print "Unable to determine Raspberry Pi revision."
